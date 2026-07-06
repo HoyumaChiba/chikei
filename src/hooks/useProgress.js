@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, ensureAuth } from "../lib/firebase.js";
 
 const LS_KEY = "chikei:v2";
-const EMPTY = { mastery: {}, xp: 0, streak: 0, lastDay: null };
+const EMPTY = { mastery: {}, xp: 0, streak: 0, lastDay: null, counts: {} };
 
 // 旧形式(数値のみ)の習熟度を {v,b} に移行
 const migrate = s => {

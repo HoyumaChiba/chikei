@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { TERMS, FIELDS, FIELD_COLOR, CATS, CATF, byName, relsOf, idxOf, getM, isForgotten, shuffle, INK, INDIGO, SHU, GOLD, rankOf, rankProg } from "../lib/terms.js";
+import { TERMS, FIELDS, FIELD_COLOR, CATS, CATF, byName, relsOf, idxOf, getM, getC, isForgotten, shuffle, INK, INDIGO, SHU, GOLD, rankOf, rankProg } from "../lib/terms.js";
+import { FIGS } from "../data/figures.jsx";
 import { MasteryDots, FieldTabs } from "./common.jsx";
 
-export default function TermDetail({ term, mastery, onClose, onJump, onGraph, onPrev, onNext, canBack, onBack }) {
+export default function TermDetail({ term, mastery, counts, onClose, onJump, onGraph, onPrev, onNext, canBack, onBack }) {
   const scRef = useRef(null);
   useEffect(() => { if (scRef.current) scRef.current.scrollTop = 0; }, [term]);
   const m = getM(mastery, term.n);
+  const c = getC(counts, term.n);
   const forgotten = isForgotten(mastery, term.n);
   const i = idxOf[term.n];
 
@@ -26,12 +28,35 @@ export default function TermDetail({ term, mastery, onClose, onJump, onGraph, on
           <MasteryDots v={m.v} />
         </div>
         {forgotten && <div style={{ display: "inline-block", fontSize: 11, fontWeight: 800, color: "#fff", background: SHU, borderRadius: 999, padding: "3px 10px", marginBottom: 6 }}>⚠ 忘れかけ(以前は★{m.b})</div>}
+        {(c.sd > 0 || c.qd > 0) && (
+          <div style={{ fontSize: 11.5, color: "#0008", marginTop: 2 }}>
+            🟥 赤シート {c.sd}回(思い出せた{c.sc})　✍️ 演習 {c.qd}回(正解{c.qc})
+          </div>
+        )}
         <p style={{ fontSize: 15, lineHeight: 1.85, fontWeight: 700, color: INDIGO, marginTop: 8 }}>{term.d}</p>
         <p style={{ fontSize: 14, lineHeight: 1.95, marginTop: 10 }}>{term.x}</p>
+        {FIGS[term.n] && (
+          <div style={{ marginTop: 14, background: "#fff", border: `1px solid ${INK}1a`, borderRadius: 10, padding: "12px 10px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: INDIGO, letterSpacing: "0.15em", marginBottom: 8 }}>◆ 図解</div>
+            {FIGS[term.n]}
+          </div>
+        )}
+        {term.calc && (
+          <div style={{ marginTop: 14, background: "#F4F7F9", border: `1px solid ${INDIGO}44`, borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: INDIGO, letterSpacing: "0.15em", marginBottom: 6 }}>◆ 計算例</div>
+            <pre style={{ fontSize: 12.5, lineHeight: 1.8, margin: 0, whiteSpace: "pre-wrap", fontFamily: "'SFMono-Regular', Consolas, Menlo, monospace" }}>{term.calc}</pre>
+          </div>
+        )}
         {term.p && (
           <div style={{ marginTop: 14, background: "#FDF6EC", border: `1px solid ${GOLD}66`, borderRadius: 10, padding: "12px 14px" }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, letterSpacing: "0.15em", marginBottom: 4 }}>◆ 試験のツボ</div>
             <p style={{ fontSize: 13, lineHeight: 1.85, margin: 0 }}>{term.p}</p>
+          </div>
+        )}
+        {term.pm && (
+          <div style={{ marginTop: 14, background: "#F8ECEB", border: `1px solid ${SHU}55`, borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: SHU, letterSpacing: "0.15em", marginBottom: 4 }}>🎯 午後の視点</div>
+            <p style={{ fontSize: 13, lineHeight: 1.85, margin: 0 }}>{term.pm}</p>
           </div>
         )}
         {relsOf(term.n).length > 0 && (

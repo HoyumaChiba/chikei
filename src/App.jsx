@@ -7,20 +7,25 @@ import RedSheet from "./components/RedSheet.jsx";
 import Quiz from "./components/Quiz.jsx";
 import Graph from "./components/Graph.jsx";
 import Stats from "./components/Stats.jsx";
+import PmGuide from "./components/PmGuide.jsx";
 
 export default function App() {
   const [tab, setTab] = useState("dict");
   const [detail, setDetail] = useState(null);
   const [graphCenter, setGraphCenter] = useState("TLS");
   const [hist, setHist] = useState([]);
-  const { mastery, xp, streak, lastDay, update, loaded } = useProgress();
+  const { mastery, xp, streak, lastDay, counts, update, loaded } = useProgress();
 
-  // ---- 学習イベント ----
-  const study = (name, ok) => {
+  // ---- 学習イベント(src: "sheet"=赤シート / "quiz"=演習) ----
+  const study = (name, ok, src) => {
     update(prev => {
       const cur = getM(prev.mastery, name);
       const v = Math.max(0, Math.min(3, cur.v + (ok ? 1 : -1)));
       const mastery = { ...prev.mastery, [name]: { v, b: Math.max(cur.b, v) } };
+      const c = { sd: 0, sc: 0, qd: 0, qc: 0, ...(prev.counts?.[name] || {}) };
+      if (src === "sheet") { c.sd += 1; if (ok) c.sc += 1; }
+      if (src === "quiz") { c.qd += 1; if (ok) c.qc += 1; }
+      const counts = { ...prev.counts, [name]: c };
       const xp = prev.xp + (ok ? 10 : 0);
       let { streak, lastDay } = prev;
       const t = todayStr();
@@ -29,7 +34,7 @@ export default function App() {
         streak = lastDay === y.toISOString().slice(0, 10) ? streak + 1 : 1;
         lastDay = t;
       }
-      return { ...prev, mastery, xp, streak, lastDay };
+      return { ...prev, mastery, xp, streak, lastDay, counts };
     });
   };
 
@@ -69,16 +74,17 @@ export default function App() {
       </header>
 
       <main style={{ maxWidth: 720, margin: "0 auto", padding: "14px 14px 90px" }}>
-        {tab === "dict" && <Dictionary mastery={mastery} onOpen={openTerm} />}
-        {tab === "sheet" && <RedSheet mastery={mastery} study={study} onOpen={openTerm} />}
-        {tab === "quiz" && <Quiz mastery={mastery} study={study} onOpen={openTerm} />}
+        {tab === "dict" && <Dictionary mastery={mastery} counts={counts} onOpen={openTerm} />}
+        {tab === "sheet" && <RedSheet mastery={mastery} study={(n, ok) => study(n, ok, "sheet")} onOpen={openTerm} />}
+        {tab === "quiz" && <Quiz mastery={mastery} study={(n, ok) => study(n, ok, "quiz")} onOpen={openTerm} />}
         {tab === "graph" && <Graph center={graphCenter} recenter={recenterGraph} mastery={mastery} onOpen={openTerm} canBack={hist.length > 0} onBack={goBack} />}
+        {tab === "pm" && <PmGuide mastery={mastery} counts={counts} onOpen={openTerm} />}
         {tab === "stats" && <Stats mastery={mastery} xp={xp} streak={streak} />}
       </main>
 
       {detail && (
         <TermDetail
-          term={detail} mastery={mastery}
+          term={detail} mastery={mastery} counts={counts}
           onClose={closeDetail} onJump={jumpTerm} onGraph={openGraph}
           onPrev={() => stepTerm(-1)} onNext={() => stepTerm(1)}
           canBack={hist.length > 0} onBack={goBack}
@@ -86,9 +92,9 @@ export default function App() {
       )}
 
       <nav className="app-nav">
-        {[["dict", "📖", "辞典"], ["sheet", "🟥", "赤シート"], ["quiz", "✍️", "演習"], ["graph", "🕸", "相関"], ["stats", "📜", "記録"]].map(([k, ic, lb]) => (
+        {[["dict", "📖", "辞典"], ["sheet", "🟥", "赤シート"], ["quiz", "✍️", "演習"], ["graph", "🕸", "相関"], ["pm", "🎯", "午後"], ["stats", "📜", "記録"]].map(([k, ic, lb]) => (
           <button key={k} onClick={() => { setTab(k); setDetail(null); setHist([]); }}
-            style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: tab === k ? SHU : INK, opacity: tab === k ? 1 : 0.55, fontWeight: tab === k ? 700 : 500, fontSize: 11, padding: "2px 10px", borderBottom: tab === k ? `2px solid ${SHU}` : "2px solid transparent" }}>
+            style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: tab === k ? SHU : INK, opacity: tab === k ? 1 : 0.55, fontWeight: tab === k ? 700 : 500, fontSize: 11, padding: "2px 6px", borderBottom: tab === k ? `2px solid ${SHU}` : "2px solid transparent" }}>
             <span style={{ fontSize: 18 }}>{ic}</span>{lb}
           </button>
         ))}

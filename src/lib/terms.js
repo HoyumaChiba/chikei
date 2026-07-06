@@ -2,6 +2,7 @@
 import { TERMS_T } from "../data/terms-technology.js";
 import { TERMS_M } from "../data/terms-management.js";
 import { TERMS_S } from "../data/terms-strategy.js";
+import { EXTRA } from "../data/terms-extra.js";
 
 export const FIELDS = { T: "テクノロジ系", M: "マネジメント系", S: "ストラテジ系" };
 export const FIELD_COLOR = { T: "#2C5F8A", M: "#3E7C59", S: "#8A5A2C" };
@@ -14,6 +15,9 @@ export const CATS = [
 export const CATF = Object.fromEntries(CATS.map(([c, f]) => [c, f]));
 
 export const TERMS = [...TERMS_T, ...TERMS_M, ...TERMS_S];
+// 追加情報(計算例 calc / 午後の視点 pm)をマージ
+TERMS.forEach(t => { const e = EXTRA[t.n]; if (e) Object.assign(t, e); });
+export const PM_TERMS = TERMS.filter(t => t.pm);
 
 export const byName = Object.fromEntries(TERMS.map(t => [t.n, t]));
 TERMS.forEach(t => { t.r = (t.r || []).filter(x => byName[x]); });
@@ -36,3 +40,6 @@ export const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0
 // 習熟度: {v: 現在値0-3, b: 過去最高値}。旧形式(数値のみ)からも読めるようにする
 export const getM = (m, n) => { const e = m[n]; if (e == null) return { v: 0, b: 0 }; if (typeof e === "number") return { v: e, b: e }; return e; };
 export const isForgotten = (m, n) => { const e = getM(m, n); return e.b >= 2 && e.v < e.b; };
+
+// 学習回数: {sd: 赤シート出題, sc: 赤シート正解, qd: 演習出題, qc: 演習正解}
+export const getC = (counts, n) => ({ sd: 0, sc: 0, qd: 0, qc: 0, ...(counts?.[n] || {}) });

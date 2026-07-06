@@ -4,12 +4,14 @@
 時録 -jiroku- と同じ構成(React + Vite + Firebase + Netlify)。
 
 ## 機能
-- 📖 辞典: 分野別/検索/「忘れかけだけ表示」。詳細は全画面で前後の用語に順送り可
+- 📖 辞典: 分野別/検索/「忘れかけだけ表示」「午後頻出だけ表示」。各用語に赤シート・演習の出題/正解回数を表示。詳細は全画面で前後の用語に順送り可
 - 🟥 赤シート: 説明→めくって答え合わせ。忘れかけ→習熟の浅い順に出題
 - ✍️ 演習: 4択(同分野の紛らわしい選択肢入り)。回答後に試験のツボを表示
 - 🕸 相関: 用語の繋がりを放射状マップで歩ける。← 戻る で履歴を遡れる
+- 🎯 午後: 午後試験の出題分野と選び方・解き方の鉄則・午後頻出用語の一覧
 - 📜 記録: XP段位・連続日数・分野別修得率・忘れかけ数
-- 進捗は localStorage に即時保存し、Firestore(匿名Auth)へ自動同期
+- 用語詳細には(該当する用語のみ)SVG図解・計算例・「午後の視点」を表示
+- 進捗(習熟度+出題/正解回数)は localStorage に即時保存し、Firestore(匿名Auth)へ自動同期
 
 ## ディレクトリ構成
 ```
@@ -18,13 +20,15 @@ src/
     terms-technology.js   テクノロジ系 134語
     terms-management.js   マネジメント系 19語
     terms-strategy.js     ストラテジ系 40語
+    terms-extra.js        追加情報(計算例 calc / 午後の視点 pm)を用語名で紐付け
+    figures.jsx           用語ごとのSVG図解(FIGS[用語名])
   lib/
     terms.js       データ統合・定数・共通ヘルパ(習熟度計算など)
     firebase.js    Firebase初期化と匿名ログイン
   hooks/
     useProgress.js 進捗の読み書き(localStorage + Firestore同期)
   components/      画面ごとのコンポーネント
-    Dictionary / TermDetail / RedSheet / Quiz / Graph / Stats / common
+    Dictionary / TermDetail / RedSheet / Quiz / Graph / PmGuide / Stats / common
   App.jsx          タブ切替・画面遷移履歴・学習イベント
 ```
 

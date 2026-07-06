@@ -1,7 +1,7 @@
 # 知繋 -chikei- 応用情報技術者試験 用語学習アプリ
 
 全193語(全14分野)を「一文定義 → 詳解 → 試験のツボ」の3層で収録した学習アプリ。
-時録 -jiroku- と同じ構成(React + Vite + Firebase + Netlify)。
+時録 -jiroku- と同じ構成(React + Vite + Firebase + Cloudflare Pages)。
 
 ## 機能
 - 📖 辞典: 分野別/検索/「忘れかけだけ表示」「午後頻出だけ表示」。各用語に赤シート・演習の出題/正解回数を表示。詳細は全画面で前後の用語に順送り可
@@ -48,11 +48,15 @@ npm run dev
 進捗データは `chikei_progress/{uid}` に1ドキュメントで保存されます。
 時録と同じプロジェクトに同居させる場合は、既存ルールにこのmatchブロックを追記してください。
 
-## Netlifyデプロイ
-1. GitHubにpushしてNetlifyでリポジトリを連携(`netlify.toml` が build 設定を持っています)
-2. Site settings → Environment variables に `.env` と同じ6つの `VITE_FB_*` を登録
+## Cloudflare Pagesデプロイ
+1. GitHubにpushして Cloudflare ダッシュボード → Workers & Pages → Pages でリポジトリを連携
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+2. Settings → Variables and Secrets に `.env` と同じ6つの `VITE_FB_*` を登録(Production/Preview 両方)
 3. デプロイ後、Firebaseコンソール → Authentication → 設定 → 承認済みドメイン に
-   Netlifyのドメイン(xxx.netlify.app)を追加
+   Cloudflare Pagesのドメイン(xxx.pages.dev)を追加
+
+SPAのルーティングは `public/_redirects`(`/* /index.html 200`)で全パスを index.html に向けています。
 
 ## 用語の追加方法
 `src/data/terms-*.js` に以下の形式でオブジェクトを足すだけです(関連 `r` は既存の用語名を指定):
